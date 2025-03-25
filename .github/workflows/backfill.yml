@@ -13,8 +13,8 @@ jobs:
 
       - name: Configure Git user
         run: |
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
+          git config user.name "Shawn Yoon"
+          git config user.email "i.shawn.yoon@gmail.com"
 
       - name: Set up Python
         uses: actions/setup-python@v4
