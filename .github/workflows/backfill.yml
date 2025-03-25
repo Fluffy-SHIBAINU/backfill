@@ -1,0 +1,60 @@
+name: One-Time Backfill Commits
+
+on:
+  workflow_dispatch:
+
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: pip install pillow numpy
+
+      - name: Backfill all commits from 2024-03-25 to today
+        run: |
+          python3 <<EOF
+          from datetime import datetime, timedelta
+          import subprocess
+          from PIL import Image
+          import numpy as np
+          import os
+
+          start_date = datetime(2024, 3, 25)
+          end_date = datetime.now()
+
+          current_date = start_date
+
+          while current_date <= end_date:
+              # Generate random image
+              array = np.random.randint(0, 256, (128, 128, 3), dtype=np.uint8)
+              image = Image.fromarray(array)
+              image.save("auto_generated_file.bmp")
+
+              # Format the date for Git
+              git_date = current_date.strftime("%Y-%m-%dT12:00:00")
+
+              # Set Git env vars
+              env = os.environ.copy()
+              env["GIT_AUTHOR_DATE"] = git_date
+              env["GIT_COMMITTER_DATE"] = git_date
+
+              # Stage and commit
+              subprocess.run(["git", "add", "auto_generated_file.bmp"], env=env)
+              subprocess.run([
+                  "git", "commit", "-m", f"chore: add bitmap for {current_date.date()}"
+              ], env=env)
+
+              current_date += timedelta(days=1)
+
+          # Final push
+          subprocess.run(["git", "push"])
+          EOF
